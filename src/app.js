@@ -1,0 +1,21 @@
+import express from 'express';
+import helmet from 'helmet';
+import { fileURLToPath } from 'node:url';
+import authRoutes from './routes/authRoutes.js';
+import { query } from './models/store.js';
+const app = express();
+app.disable('x-powered-by');
+if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
+app.use(helmet({ contentSecurityPolicy: { directives: { 'script-src': ["'self'"], 'style-src': ["'self'"], 'font-src': ["'self'"], 'img-src': ["'self'", 'data:'], 'upgrade-insecure-requests': process.env.NODE_ENV === 'production' ? [] : null } } }));
+app.use(express.json({ limit: '10kb' }));
+app.get('/api/health', async (_req, res) => { await query('SELECT 1'); res.json({ status: 'ok', service: 'gatehouse' }); });
+app.use('/api/auth', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); }, authRoutes);
+app.use('/api', (_req, res) => res.status(404).json({ message: 'Endpoint not found.' }));
+app.use(express.static(fileURLToPath(new URL('../public', import.meta.url))));
+app.use((error, _req, res, _next) => {
+  if (error.type === 'entity.parse.failed') return res.status(400).json({ message: 'Request body must be valid JSON.' });
+  if (error.type === 'entity.too.large') return res.status(413).json({ message: 'Request body is too large.' });
+  console.error('Request failed:', error.code || error.name);
+  res.status(500).json({ message: 'Something went wrong. Please try again.' });
+});
+export default app;
