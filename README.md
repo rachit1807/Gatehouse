@@ -8,7 +8,7 @@
 
 A complete JWT authentication application with a quiet editorial interface,<br>an individual member pass, and security built into every request.
 
-[Explore the project](https://github.com/rachit1807/Gatehouse) · [API reference](#api-reference) · [Run locally](#run-locally)
+[Live demo](https://gatehouse-rachit.onrender.com) · [GitHub repository](https://github.com/rachit1807/Gatehouse) · [API reference](#api-reference) · [Run locally](#run-locally)
 
 <img src="https://skillicons.dev/icons?i=nodejs,express,js,html,css,postgres,sqlite,git,github,vscode&theme=light" alt="Node.js, Express, JavaScript, HTML, CSS, PostgreSQL, SQLite, Git, GitHub and VS Code" height="44">
 
@@ -280,9 +280,17 @@ Gatehouse/
 6. Current-password verification and all-session revocation after password change.
 7. Database readiness, static page delivery, CSP headers, malformed JSON, and missing API routes.
 
-Browser checks cover registration, login, profile edits, activity, logout, light/dark themes, and a 390px mobile viewport. PostgreSQL production behavior should also be smoke-tested after deployment.
+Browser checks cover registration, login, profile edits, activity, logout, light/dark themes, and a 390px mobile viewport. Live PostgreSQL smoke checks passed on 29 October 2026 for database readiness, registration, login, protected access, profile updates, activity, logout, and rejection of a revoked token.
 
 ## Deployment
+
+**Live application:** [gatehouse-rachit.onrender.com](https://gatehouse-rachit.onrender.com)
+
+The application runs as a free Render Node web service in Singapore, backed by its own **Neon PostgreSQL 16 project** in Singapore. Gatehouse has an independent database and role, with application tables in the `gatehouse` schema; it does not share a database with other projects. The `production` branch has no scheduled expiration. Free-plan quotas and provider terms still apply, and the free web service may take time to wake after inactivity.
+
+The server uses a direct TLS database connection and a five-connection application pool because schema initialization and `search_path` rely on session settings. Keep the connection URL and JWT signing secret exclusively in the hosting environment.
+
+### Reproduce the deployment
 
 Deploy as a **Node web service**, serving frontend and API from the same origin:
 
@@ -315,4 +323,4 @@ DM Sans, DM Mono, and Instrument Serif are self-hosted under the SIL Open Font L
 - **Session lifecycle:** JWT signature checks alone do not revoke a logged-out token. Database-backed session IDs make logout immediate and invalidate all sessions after password changes.
 - **Form transitions:** browser testing revealed a loading-state bug that removed the submit button’s child elements; preserving its structure fixed the registration-to-login transition.
 - **Responsive themes:** both the entry layout and membership pass needed separate mobile arrangements and readable light/dark color palettes.
-- **Deployment storage:** local SQLite is convenient for development, but production requires PostgreSQL to survive redeploys. A separate production database must be configured before the live release.
+- **Deployment storage:** local SQLite is convenient for development, but production requires PostgreSQL to survive redeploys. The live release uses an independent Neon PostgreSQL project, keeping Gatehouse data separate from older applications.
